@@ -2,6 +2,10 @@
 
 A React-based poster editor that allows users to create and edit posters with text and image elements.
 
+## Live demo
+
+https://canvas-editor-pg.netlify.app/
+
 ## Features
 
 - 🖱️ Drag and drop elements
