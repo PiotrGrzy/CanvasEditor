@@ -1,60 +1,103 @@
-import { DndContext, DragEndEvent, useDroppable } from '@dnd-kit/core';
-import { PosterElement } from '../types';
-import DraggableElement from './DraggableElement';
-import { ResizableBox } from 'react-resizable';
+import { PosterElement, TextColor } from '../types';
 import StartImage from './StartImage';
+import { useCallback } from 'react';
+import { RndElement } from './RndElement';
 
 interface PosterAreaProps {
+  posterRef: React.RefObject<HTMLDivElement>;
   elements: PosterElement[];
+  setElements: React.Dispatch<React.SetStateAction<PosterElement[]>>;
+  selectedElement: string | null;
+  setSelectedElement: (id: string | null) => void;
   backgroundImage?: string;
-  handleDragEnd: (event: DragEndEvent) => void;
-  handleResize: (id: string, event: ResizeEndEvent, data: ResizeEndData) => void;
-  setSelectedElement: (id: string) => void;
-  setColorPickerVisible: (visible: boolean) => void;
 }
 
 export default function PosterArea(props: PosterAreaProps) {
-  const { elements, backgroundImage, handleDragEnd, handleResize, setSelectedElement, setColorPickerVisible } = props;
-  const { setNodeRef } = useDroppable({
-    id: 'poster-area',
-  });
+  const { elements, backgroundImage, setSelectedElement, posterRef, selectedElement, setElements } = props;
 
   if (elements.length === 0 && !backgroundImage) return <StartImage />;
-  console.log('elements', elements);
+
+  const updateElement = useCallback((id: string, updates: Partial<PosterElement>) => {
+    setElements((prevElements: PosterElement[]) => prevElements.map(el => (el.id === id ? { ...el, ...updates } : el)));
+  }, []);
+
+  const handleDragStop = (id: string, d: { x: number; y: number }) => {
+    updateElement(id, { x: d.x, y: d.y });
+  };
+
+  const handleTextChange = useCallback(
+    (id: string, newContent: string) => {
+      updateElement(id, { content: newContent, isEditing: false });
+    },
+    [updateElement]
+  );
+
+  const handleElementClick = useCallback(
+    (id: string, e: React.MouseEvent) => {
+      e.stopPropagation();
+      setSelectedElement(id);
+    },
+    [elements]
+  );
+
+  const handlePosterClick = useCallback(() => {
+    setSelectedElement(null);
+  }, []);
+
+  const handleColorChange = (color: TextColor) => {
+    if (selectedElement) {
+      updateElement(selectedElement, { color });
+    }
+  };
+
+  const handleResize = (
+    id: string,
+    _ref: HTMLElement,
+    position: { x: number; y: number },
+    size: { width: number; height: number }
+  ) => {
+    const element = elements.find(el => el.id === id);
+    if (element) {
+      const updates: Partial<PosterElement> = {
+        x: position.x,
+        y: position.y,
+        width: size.width,
+        height: size.height,
+      };
+
+      if (element.type === 'text') {
+        const aspectRatio = element.width / element.fontSize!;
+        updates.fontSize = Math.round(size.width / aspectRatio);
+      }
+      updateElement(id, updates);
+    }
+  };
+
+  const handleDeleteElement = useCallback((id: string) => {
+    setElements(prevElements => prevElements.filter(el => el.id !== id));
+  }, []);
 
   return (
-    <DndContext onDragEnd={props.handleDragEnd}>
-      <div
-        ref={setNodeRef}
-        className='aspect-4/5 border-2 border-gray-300 relative overflow-hidden'
-        style={{ backgroundImage: backgroundImage ? `url(${backgroundImage})` : 'none', backgroundSize: 'cover' }}
-      >
-        {elements.map(element => (
-          <DraggableElement key={element.id} element={element}>
-            <ResizableBox
-              width={element.width}
-              height={element.height}
-              onResize={(e, data) => handleResize(element.id, e, data)}
-              draggableOpts={{ grid: [1, 1] }}
-            >
-              <div
-                className='absolute cursor-move'
-                style={{ width: '100%', height: '100%', left: element.x, top: element.y }}
-              >
-                {element.type === 'text' ? (
-                  <p style={{ color: element.color, fontSize: '16px', wordWrap: 'break-word' }}>{element.content}</p>
-                ) : (
-                  <img
-                    src={element.content || '/placeholder.svg'}
-                    alt='Poster element'
-                    style={{ width: '100%', height: '100%', objectFit: 'contain' }}
-                  />
-                )}
-              </div>
-            </ResizableBox>
-          </DraggableElement>
-        ))}
-      </div>
-    </DndContext>
+    <div
+      ref={posterRef}
+      className='aspect-4/5 relative overflow-hidden bg-black-50'
+      style={{ backgroundImage: backgroundImage ? `url(${backgroundImage})` : 'none', backgroundSize: 'cover' }}
+      onClick={handlePosterClick}
+    >
+      {elements.map(element => (
+        <RndElement
+          key={element.id}
+          element={element}
+          selectedElement={selectedElement}
+          onDragStop={handleDragStop}
+          onResize={handleResize}
+          onElementClick={handleElementClick}
+          onDeleteElement={handleDeleteElement}
+          onColorChange={handleColorChange}
+          handleTextChange={handleTextChange}
+          updateElement={updateElement}
+        />
+      ))}
+    </div>
   );
 }

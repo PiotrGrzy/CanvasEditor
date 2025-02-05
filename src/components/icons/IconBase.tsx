@@ -3,7 +3,9 @@ import { cn } from '../../lib/utils';
 const sizeClasses = {
   sm: 'w-4 h-4',
   md: 'w-8 h-8',
-  l: 'w-24 h-24',
+  lg: 'w-12 h-12',
+  xl: 'w-24 h-24',
+  xxl: 'w-72 h-72',
 } as const;
 
 const fillClasses = {

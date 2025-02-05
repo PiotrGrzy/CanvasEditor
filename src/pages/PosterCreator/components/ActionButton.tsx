@@ -22,8 +22,8 @@ export function ActionButton({ iconName, name, onClick }: ActionButtonProps) {
       onClick={onClick}
       className='flex flex-col cursor-pointer items-center justify-center h-64 gap-2 p-3 rounded-[10px] bg-white-97 transition-colors'
     >
-      <Icon size='l' />
-      <span className='text-sm text-black-75'>{name}</span>
+      <Icon size='xl' />
+      <span className='text-sm text-black-75 mt-10'>{name}</span>
     </button>
   );
 }
