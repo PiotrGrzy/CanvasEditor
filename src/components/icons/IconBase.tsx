@@ -23,7 +23,7 @@ export interface IconBaseProps extends Omit<React.SVGProps<SVGSVGElement>, 'ref'
   children: React.ReactNode;
 }
 
-export interface IconProps extends Omit<IconBaseProps, 'children'> {}
+export type IconProps = Omit<IconBaseProps, 'children'>;
 
 export function IconBase({
   size = 'md',

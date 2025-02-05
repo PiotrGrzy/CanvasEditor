@@ -15,11 +15,14 @@ interface PosterAreaProps {
 export default function PosterArea(props: PosterAreaProps) {
   const { elements, backgroundImage, setSelectedElement, posterRef, selectedElement, setElements } = props;
 
-  if (elements.length === 0 && !backgroundImage) return <StartImage />;
-
-  const updateElement = useCallback((id: string, updates: Partial<PosterElement>) => {
-    setElements((prevElements: PosterElement[]) => prevElements.map(el => (el.id === id ? { ...el, ...updates } : el)));
-  }, []);
+  const updateElement = useCallback(
+    (id: string, updates: Partial<PosterElement>) => {
+      setElements((prevElements: PosterElement[]) =>
+        prevElements.map(el => (el.id === id ? { ...el, ...updates } : el))
+      );
+    },
+    [setElements]
+  );
 
   const handleDragStop = (id: string, d: { x: number; y: number }) => {
     updateElement(id, { x: d.x, y: d.y });
@@ -37,12 +40,12 @@ export default function PosterArea(props: PosterAreaProps) {
       e.stopPropagation();
       setSelectedElement(id);
     },
-    [elements]
+    [setSelectedElement]
   );
 
   const handlePosterClick = useCallback(() => {
     setSelectedElement(null);
-  }, []);
+  }, [setSelectedElement]);
 
   const handleColorChange = (color: TextColor) => {
     if (selectedElement) {
@@ -73,9 +76,14 @@ export default function PosterArea(props: PosterAreaProps) {
     }
   };
 
-  const handleDeleteElement = useCallback((id: string) => {
-    setElements(prevElements => prevElements.filter(el => el.id !== id));
-  }, []);
+  const handleDeleteElement = useCallback(
+    (id: string) => {
+      setElements(prevElements => prevElements.filter(el => el.id !== id));
+    },
+    [setElements]
+  );
+
+  if (elements.length === 0 && !backgroundImage) return <StartImage />;
 
   return (
     <div
