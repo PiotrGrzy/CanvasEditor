@@ -20,4 +20,14 @@ A React-based poster editor that allows users to create and edit posters with te
 
 ## Installation
 
+1. Clone repository
+
+   git clone https://github.com/PiotrGrzy/CanvasEditor
+
 2. Install dependencies:
+
+   npm run install
+
+3. Run project
+
+   npm run dev
